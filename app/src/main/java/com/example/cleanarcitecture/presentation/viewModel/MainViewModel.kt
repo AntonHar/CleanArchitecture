@@ -42,14 +42,20 @@ class MainViewModel : ViewModel() {
     }
 
     init {
-
-        operations.value = operationsUseCase.getOperations().toMutableList()
-
+        viewModelScope.launch {
+            operations.value = operationsUseCase.getOperations()
+        }
     }
-    suspend fun setFree(){
+
+    suspend fun setFree() {
         delay(3000)
         _calculationState.value = CalculationState.Free
     }
 
-
+fun onOperationSelected(operation: Operation){
+    viewModelScope.launch {
+        operationsUseCase.deleteOperation(operation)
+        operations.value = operationsUseCase.getOperations()
+    }
+}
 }

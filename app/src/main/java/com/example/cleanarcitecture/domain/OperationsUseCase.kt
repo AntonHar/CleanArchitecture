@@ -1,5 +1,7 @@
 package com.example.cleanarcitecture.domain
 
 interface OperationsUseCase {
-    fun getOperations() : List<Operation>
+   suspend fun getOperations() : MutableList<Operation>
+   suspend fun deleteOperation(operation: Operation)
+
 }

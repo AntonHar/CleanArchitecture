@@ -2,6 +2,7 @@ package com.example.cleanarcitecture.domain
 
 interface OperationsRepository {
 
-    fun getOperations(): List<Operation>
-    fun addOperation(operation: Operation)
+    suspend fun getOperations(): MutableList<Operation>
+    suspend fun addOperation(operation: Operation)
+    suspend fun removeOperation(operation: Operation)
 }

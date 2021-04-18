@@ -15,11 +15,13 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cleanarcitecture.R
+import com.example.cleanarcitecture.domain.Operation
+import com.example.cleanarcitecture.presentation.adapter.ItemClickListener
 import com.example.cleanarcitecture.presentation.adapter.OperationAdapter
 import com.example.cleanarcitecture.presentation.viewModel.CalculationState
 import com.example.cleanarcitecture.presentation.viewModel.MainViewModel
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(), ItemClickListener {
 
     companion object {
         fun newInstance() =
@@ -59,6 +61,10 @@ class MainFragment : Fragment() {
             adapter.setData(it)
         })
         viewModel.calculationState.observe(viewLifecycleOwner, Observer {
+            when (it) {
+                CalculationState.Free -> calculateBtn.isEnabled = true
+                else -> calculateBtn.isEnabled = false
+            }
             calculationStateText.text = getString(
                 when (it) {
                     CalculationState.Free -> R.string.free_state
@@ -80,8 +86,15 @@ class MainFragment : Fragment() {
 
         operations.layoutManager = LinearLayoutManager(requireContext())
         operations.adapter = adapter
+        adapter.setListener(this)
+    }
+    override fun onItemClick(operation: Operation) {
+        viewModel.onOperationSelected(operation)
+    }
 
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        adapter.setListener(null)
     }
 
 }
