@@ -15,10 +15,10 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cleanarcitecture.R
-import com.example.cleanarcitecture.domain.Operation
+import com.example.cleanarcitecture.domain.entity.Person
 import com.example.cleanarcitecture.presentation.adapter.ItemClickListener
-import com.example.cleanarcitecture.presentation.adapter.OperationAdapter
-import com.example.cleanarcitecture.presentation.viewModel.CalculationState
+import com.example.cleanarcitecture.presentation.adapter.PersonAdapter
+import com.example.cleanarcitecture.presentation.viewModel.AddItemState
 import com.example.cleanarcitecture.presentation.viewModel.MainViewModel
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -29,12 +29,12 @@ class MainFragment : Fragment(), ItemClickListener {
     }
 
     private lateinit var viewModel: MainViewModel
-    private lateinit var firstInput: EditText
-    private lateinit var secondInput: EditText
-    private lateinit var calculateBtn: Button
-    private lateinit var operations: RecyclerView
-    private lateinit var calculationStateText: TextView
-    private var adapter = OperationAdapter(mutableListOf())
+    private lateinit var nameInput: EditText
+    private lateinit var rateInput: EditText
+    private lateinit var addPersonBtn: Button
+    private lateinit var personsList: RecyclerView
+    private lateinit var stateText: TextView
+    private var adapter = PersonAdapter(listOf())
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -44,57 +44,67 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        firstInput.doAfterTextChanged {
-            viewModel.first = it.toString()
-        }
-        secondInput.doAfterTextChanged {
-            viewModel.second = it.toString()
-        }
-        calculateBtn.setOnClickListener {
 
-            val toast = Toast.makeText(requireContext(), "${viewModel.calculate()}", Toast.LENGTH_SHORT )
-            toast.show()
-
+        nameInput.doAfterTextChanged {
+            viewModel.name = it.toString()
         }
 
-        viewModel.getOperations().observe(viewLifecycleOwner, Observer {
+        rateInput.doAfterTextChanged {
+            viewModel.rate = it.toString().toInt()
+        }
+
+        addPersonBtn.setOnClickListener {
+            if (nameInput.text.isEmpty() || rateInput.text.isEmpty()){
+                val toast = Toast.makeText(requireContext(), "input field are empty",Toast.LENGTH_SHORT)
+                toast.show()
+            } else viewModel.registerPerson()
+        }
+
+        viewModel.getPersons().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)
         })
-        viewModel.calculationState.observe(viewLifecycleOwner, Observer {
+
+        viewModel.addItemState.observe(viewLifecycleOwner, Observer {
             when (it) {
-                CalculationState.Free -> calculateBtn.isEnabled = true
-                else -> calculateBtn.isEnabled = false
+                AddItemState.Free -> addPersonBtn.isEnabled = true
+                else -> addPersonBtn.isEnabled = false
             }
-            calculationStateText.text = getString(
+            stateText.text = getString(
                 when (it) {
-                    CalculationState.Free -> R.string.free_state
-                    CalculationState.Loading -> R.string.loading_state
-                    CalculationState.Rezult -> R.string.rezult_state
+                    AddItemState.Free -> R.string.free_state
+                    AddItemState.Loading -> R.string.loading_state
+                    AddItemState.Result -> R.string.rezult_state
                 }
             )
+            when (it){
+                AddItemState.Free -> addPersonBtn.isEnabled = true
+                AddItemState.Loading -> addPersonBtn.isEnabled = false
+                AddItemState.Result -> addPersonBtn.isEnabled = false
+            }
         })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        firstInput = view.findViewById(R.id.input_first)
-        secondInput = view.findViewById(R.id.input_second)
-        calculateBtn = view.findViewById(R.id.calculate_btn)
-        operations = view.findViewById(R.id.operations_list)
-        calculationStateText = view.findViewById(R.id.calculation_state_text)
+        nameInput = view.findViewById(R.id.name_input)
+        rateInput = view.findViewById(R.id.rate_input)
+        addPersonBtn = view.findViewById(R.id.add_person_btn)
+        personsList = view.findViewById(R.id.persons_list)
+        stateText = view.findViewById(R.id.state_text)
 
-        operations.layoutManager = LinearLayoutManager(requireContext())
-        operations.adapter = adapter
+        personsList.layoutManager = LinearLayoutManager(requireContext())
+        personsList.adapter = adapter
         adapter.setListener(this)
     }
-    override fun onItemClick(operation: Operation) {
-        viewModel.onOperationSelected(operation)
+    override fun onItemClick(person: Person) {
+        viewModel.onOperationSelected(person)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         adapter.setListener(null)
     }
+
 
 }

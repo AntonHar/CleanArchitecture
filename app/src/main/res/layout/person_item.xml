@@ -4,10 +4,10 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="5dp"
-    android:id="@+id/operation_container">
+    android:id="@+id/person_container">
 
     <TextView
-    android:id="@+id/operation_text"
+    android:id="@+id/person_text"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     app:layout_constraintEnd_toEndOf="parent"

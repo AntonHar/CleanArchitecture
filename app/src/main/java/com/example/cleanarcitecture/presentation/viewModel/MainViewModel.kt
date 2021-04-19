@@ -5,57 +5,50 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cleanarcitecture.Dependencies
-import com.example.cleanarcitecture.domain.CalculateUseCase
-import com.example.cleanarcitecture.domain.Operation
-import com.example.cleanarcitecture.domain.OperationsUseCase
+import com.example.cleanarcitecture.domain.entity.Person
+import com.example.cleanarcitecture.domain.usecase.PersonUseCase
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
-    private val calculateUseCase: CalculateUseCase by lazy { Dependencies.getCalculateUseCase() }
-    private val operationsUseCase: OperationsUseCase by lazy { Dependencies.getOperationsUseCase() }
-    var first: String = ""
-    var second: String = ""
+    private val personUseCase: PersonUseCase by lazy { Dependencies.getPersonsUseCase() }
+    var name: String = ""
+    var rate: Int = 0
+    private var persons = MutableLiveData<List<Person>>(listOf())
 
-    private var operations = MutableLiveData<MutableList<Operation>>(mutableListOf())
+    private var _calculationState = MutableLiveData<AddItemState>(AddItemState.Free)
+    val addItemState: LiveData<AddItemState> = _calculationState
 
-    private var _calculationState = MutableLiveData<CalculationState>(CalculationState.Free)
-    val calculationState: LiveData<CalculationState> = _calculationState
-
-    fun getOperations(): LiveData<MutableList<Operation>> {
-        return operations
+    fun getPersons(): LiveData<List<Person>> {
+        return persons
     }
 
-
-    fun calculate(): Int {
-        var result: Int = 0
-        _calculationState.value = CalculationState.Loading
+    fun registerPerson() {
+        _calculationState.value = AddItemState.Loading
         viewModelScope.launch {
-            result = calculateUseCase.calculate(first.toInt(), second.toInt())
-            operations.value = operationsUseCase.getOperations().toMutableList()
-            _calculationState.value = CalculationState.Rezult
+            personUseCase.registerPerson(name, rate)
+            _calculationState.value = AddItemState.Result
             setFree()
         }
-
-        return result
-
     }
 
     init {
         viewModelScope.launch {
-            operations.value = operationsUseCase.getOperations()
+            personUseCase.getPersons().collect {
+                persons.value = it
+            }
         }
     }
 
     suspend fun setFree() {
-        delay(3000)
-        _calculationState.value = CalculationState.Free
+        delay(2000)
+        _calculationState.value = AddItemState.Free
     }
 
-fun onOperationSelected(operation: Operation){
-    viewModelScope.launch {
-        operationsUseCase.deleteOperation(operation)
-        operations.value = operationsUseCase.getOperations()
+    fun onOperationSelected(person: Person) {
+        viewModelScope.launch {
+            personUseCase.removePerson(person)
+        }
     }
-}
 }

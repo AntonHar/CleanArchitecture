@@ -6,42 +6,41 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cleanarcitecture.R
-import com.example.cleanarcitecture.domain.Operation
+import com.example.cleanarcitecture.domain.entity.Person
 import com.example.cleanarcitecture.presentation.ui.MainFragment
 
-class OperationAdapter internal constructor(
-    private var data: MutableList<Operation>
-) : RecyclerView.Adapter<OperationAdapter.ViewHolder>() {
+class PersonAdapter internal constructor(
+    private var persons: List<Person>
+) : RecyclerView.Adapter<PersonAdapter.ViewHolder>() {
 
     private var listener: ItemClickListener? = null
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.operation_item, viewGroup, false)
+            .inflate(R.layout.person_item, viewGroup, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
-        val item = data[position]
-        viewHolder.text.text = item.toString()
+        val person = persons[position]
+        viewHolder.text.text = person.toString()
         viewHolder.itemView.setOnClickListener {
-            listener?.onItemClick(item)
+            listener?.onItemClick(person)
         }
 
     }
 
-    override fun getItemCount() = data.size
+    override fun getItemCount() = persons.size
 
-    fun setData(data: MutableList<Operation>){
-        this.data = data
+    fun setData(data: List<Person>) {
+        this.persons = data
         notifyDataSetChanged()
     }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val text: TextView = view.findViewById<TextView>(R.id.operation_text)
-
-
+        val container: View = view.findViewById(R.id.person_container)
+        val text: TextView = view.findViewById<TextView>(R.id.person_text)
     }
 
     fun setListener(itemClickListener: MainFragment?) {
@@ -49,6 +48,4 @@ class OperationAdapter internal constructor(
     }
 }
 
-interface ItemClickListener {
-    fun onItemClick(operation: Operation)
-}
+
